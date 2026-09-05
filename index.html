@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#173C36">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ShopSmart">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ShopSmart — Listas de Compras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ============ TOPO ============ -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-row">
+      <div class="topbar-titlewrap">
+        <span class="topbar-eyebrow" id="topbar-eyebrow">shopsmart</span>
+        <h1 class="topbar-title" id="topbar-title">Início</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="btn-search" title="Buscar" data-visible-on="lists">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <button class="icon-btn" id="btn-more" title="Mais opções">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+      </div>
+    </div>
+    <div class="topbar-search" id="topbar-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="search-input" placeholder="Buscar item, lista ou categoria...">
+      <button id="search-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </header>
+
+  <!-- ============ CONTEÚDO ============ -->
+  <main class="app-main" id="app-main">
+
+    <!-- ---------- HOME ---------- -->
+    <section class="screen active" id="screen-home" data-tab="home">
+
+      <div class="install-banner" id="install-banner" hidden>
+        <div class="install-banner-icon"><i class="fa-solid fa-arrow-down-to-bracket"></i></div>
+        <div class="install-banner-text">
+          <strong>Instalar o ShopSmart</strong>
+          <span>Acesse direto da tela inicial, funciona até offline.</span>
+        </div>
+        <button class="install-banner-btn" id="install-banner-btn">Instalar</button>
+        <button class="install-banner-close" id="install-banner-close" title="Agora não"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="active-list-card" id="active-list-card" hidden>
+        <div class="alc-head">
+          <div class="alc-head-info">
+            <span class="alc-tag"><i class="fa-solid fa-cart-shopping"></i> Comprando agora</span>
+            <h3 id="alc-name">—</h3>
+          </div>
+          <div class="alc-ring-wrap">
+            <svg viewBox="0 0 64 64" class="alc-ring">
+              <circle cx="32" cy="32" r="27" class="ring-track"/>
+              <circle cx="32" cy="32" r="27" class="ring-fill" id="alc-ring-fill"/>
+            </svg>
+            <span class="alc-ring-label" id="alc-ring-label">0%</span>
+          </div>
+        </div>
+        <div class="alc-numbers">
+          <div>
+            <span class="alc-num" id="alc-spent">R$ 0,00</span>
+            <span class="alc-num-label">no carrinho</span>
+          </div>
+          <div class="alc-divider"></div>
+          <div>
+            <span class="alc-num" id="alc-balance">R$ 0,00</span>
+            <span class="alc-num-label" id="alc-balance-label">previsto</span>
+          </div>
+          <div class="alc-divider"></div>
+          <div>
+            <span class="alc-num" id="alc-items">0/0</span>
+            <span class="alc-num-label">itens pegos</span>
+          </div>
+        </div>
+        <button class="btn btn-onlight" id="alc-continue">
+          Continuar compra <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-icon kpi-icon-a"><i class="fa-solid fa-layer-group"></i></span>
+          <span class="kpi-value" id="kpi-lists">0</span>
+          <span class="kpi-label">listas concluídas</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon kpi-icon-b"><i class="fa-solid fa-sack-dollar"></i></span>
+          <span class="kpi-value" id="kpi-total">R$ 0</span>
+          <span class="kpi-label">gasto total</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon kpi-icon-c"><i class="fa-solid fa-piggy-bank"></i></span>
+          <span class="kpi-value" id="kpi-saved">R$ 0</span>
+          <span class="kpi-label">economia acumulada</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-icon kpi-icon-d"><i class="fa-solid fa-ticket"></i></span>
+          <span class="kpi-value" id="kpi-avg">R$ 0</span>
+          <span class="kpi-label">ticket médio</span>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Listas recentes</h2>
+        <a href="#" class="link-see-all" data-goto-tab="lists">ver todas</a>
+      </div>
+      <div class="recent-lists" id="recent-lists"></div>
+
+      <div class="section-head" style="margin-top:28px;">
+        <h2>Onde o dinheiro vai</h2>
+      </div>
+      <div class="card" id="home-category-card">
+        <div id="home-category-chart" class="empty-inline">Sem gastos registrados ainda.</div>
+      </div>
+    </section>
+
+    <!-- ---------- LISTAS ---------- -->
+    <section class="screen" id="screen-lists" data-tab="lists">
+      <div class="filter-row">
+        <button class="chip active" data-filter="all">Todas</button>
+        <button class="chip" data-filter="active">Em andamento</button>
+        <button class="chip" data-filter="completed">Concluídas</button>
+      </div>
+      <div class="lists-container" id="lists-container"></div>
+    </section>
+
+    <!-- ---------- DETALHE DA LISTA (carrinho) ---------- -->
+    <section class="screen" id="screen-listdetail" data-tab="listdetail">
+      <div class="detail-head">
+        <button class="icon-btn" id="detail-back"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="detail-head-info">
+          <h2 id="detail-name">Lista</h2>
+          <span id="detail-meta">—</span>
+        </div>
+        <button class="icon-btn" id="detail-menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+      </div>
+
+      <div class="detail-progress-card" id="detail-progress-card">
+        <div class="dp-stats">
+          <div class="dp-stat">
+            <span class="dp-stat-label">Gasto no carrinho</span>
+            <span class="dp-stat-value" id="dp-spent">R$ 0,00</span>
+            <span class="dp-stat-sub">de <span id="dp-planned">R$ 0,00</span> previsto</span>
+          </div>
+          <div class="dp-stat dp-stat-balance">
+            <span class="dp-stat-label" id="dp-balance-label">Saldo restante</span>
+            <span class="dp-stat-value" id="dp-balance">R$ 0,00</span>
+            <span class="dp-stat-sub" id="dp-balance-sub"></span>
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="dp-fill"></div>
+        </div>
+        <div class="dp-foot">
+          <span id="dp-items">0 de 0 itens no carrinho</span>
+          <span id="dp-percent"></span>
+        </div>
+      </div>
+
+      <div class="detail-toolbar">
+        <span id="detail-count">0 itens</span>
+        <div class="detail-toolbar-actions">
+          <button class="text-btn" id="sort-toggle"><i class="fa-solid fa-arrow-down-a-z"></i> Categoria</button>
+        </div>
+      </div>
+
+      <div class="products-list" id="products-container"></div>
+
+      <button class="btn btn-success finish-btn" id="finish-list-btn">
+        <i class="fa-solid fa-flag-checkered"></i> Concluir compra
+      </button>
+
+      <button class="fab-btn" id="add-product-btn" title="Adicionar item">
+        <i class="fa-solid fa-plus"></i><span>Item</span>
+      </button>
+    </section>
+
+    <!-- ---------- COMPARATIVO ---------- -->
+    <section class="screen" id="screen-compare" data-tab="compare">
+
+      <div class="period-tabs" id="period-tabs">
+        <button class="ptab active" data-period="30">30 dias</button>
+        <button class="ptab" data-period="90">90 dias</button>
+        <button class="ptab" data-period="180">6 meses</button>
+        <button class="ptab" data-period="all">Tudo</button>
+      </div>
+
+      <div class="compare-summary" id="compare-summary"></div>
+
+      <div class="section-head" style="margin-top:26px;">
+        <h2><i class="fa-solid fa-chart-line"></i> Evolução dos gastos</h2>
+      </div>
+      <div class="card">
+        <div id="evolution-chart" class="empty-inline">Conclua ao menos uma lista para ver a evolução.</div>
+      </div>
+
+      <div class="section-head" style="margin-top:26px;">
+        <h2><i class="fa-solid fa-scale-balanced"></i> Lista atual x lista anterior</h2>
+      </div>
+      <div class="card" id="vs-card">
+        <div class="empty-inline">Sem dados suficientes para comparar.</div>
+      </div>
+
+      <div class="section-head" style="margin-top:26px;">
+        <h2><i class="fa-solid fa-tags"></i> Gasto por categoria no período</h2>
+      </div>
+      <div class="card">
+        <div id="compare-category-chart" class="empty-inline">Sem dados no período selecionado.</div>
+      </div>
+
+      <div class="section-head" style="margin-top:26px;">
+        <h2><i class="fa-solid fa-table-list"></i> Todas as listas</h2>
+      </div>
+      <div class="card table-card">
+        <div class="table-wrap">
+          <table class="compare-table" id="compare-table">
+            <thead>
+              <tr>
+                <th>Lista</th>
+                <th>Data</th>
+                <th class="num">Itens</th>
+                <th class="num">Previsto</th>
+                <th class="num">Gasto</th>
+                <th class="num">Economia</th>
+              </tr>
+            </thead>
+            <tbody id="compare-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- MAIS ---------- -->
+    <section class="screen" id="screen-more" data-tab="more">
+      <div class="section-head"><h2>Dados</h2></div>
+      <div class="card menu-card">
+        <button class="menu-row" id="install-app-btn" hidden>
+          <span class="menu-row-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
+          <span class="menu-row-text"><strong>Instalar aplicativo</strong><small>Adicionar à tela inicial</small></span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="menu-row" id="export-pdf-btn">
+          <span class="menu-row-icon"><i class="fa-solid fa-file-pdf"></i></span>
+          <span class="menu-row-text"><strong>Exportar relatório</strong><small>Gera um resumo em HTML/impressão</small></span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="menu-row" id="export-data-btn">
+          <span class="menu-row-icon"><i class="fa-solid fa-download"></i></span>
+          <span class="menu-row-text"><strong>Exportar backup</strong><small>Salva todos os dados em .json</small></span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="menu-row" id="import-data-btn">
+          <span class="menu-row-icon"><i class="fa-solid fa-upload"></i></span>
+          <span class="menu-row-text"><strong>Importar backup</strong><small>Restaura dados de um arquivo .json</small></span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <input type="file" id="import-file-input" accept="application/json" hidden>
+        <button class="menu-row menu-row-danger" id="clear-data-btn">
+          <span class="menu-row-icon"><i class="fa-solid fa-trash-can"></i></span>
+          <span class="menu-row-text"><strong>Apagar todos os dados</strong><small>Ação permanente</small></span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <div class="section-head" style="margin-top:26px;"><h2>Sobre</h2></div>
+      <div class="card about-card">
+        <div class="about-logo"><i class="fa-solid fa-basket-shopping"></i></div>
+        <strong>ShopSmart</strong>
+        <p>Organize suas compras de mercado em listas, marque os itens à medida que coloca no carrinho e acompanhe a evolução dos seus gastos ao longo do tempo.</p>
+        <span class="about-version">Versão 2.0.0 · dados salvos apenas neste dispositivo</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ MENU INFERIOR ============ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="home">
+      <i class="fa-solid fa-house"></i><span>Início</span>
+    </button>
+    <button class="nav-item" data-tab="lists">
+      <i class="fa-solid fa-list-check"></i><span>Listas</span>
+    </button>
+    <button class="nav-item nav-item-fab" id="nav-new-list">
+      <span class="nav-fab"><i class="fa-solid fa-plus"></i></span>
+    </button>
+    <button class="nav-item" data-tab="compare">
+      <i class="fa-solid fa-chart-simple"></i><span>Comparar</span>
+    </button>
+    <button class="nav-item" data-tab="more">
+      <i class="fa-solid fa-ellipsis"></i><span>Mais</span>
+    </button>
+  </nav>
+
+  <!-- ============ MODAL: nova lista ============ -->
+  <div class="modal" id="list-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2 id="list-modal-title">Nova lista</h2>
+        <button class="close-modal" data-close="list-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="list-form">
+        <input type="hidden" id="list-id">
+        <div class="form-group">
+          <label for="list-name">Nome da lista</label>
+          <input type="text" id="list-name" placeholder="Ex: Mercado da semana" required maxlength="60">
+        </div>
+        <div class="form-group">
+          <label for="list-budget">Orçamento previsto (R$) <span class="opt">opcional</span></label>
+          <input type="number" id="list-budget" min="0" step="0.01" placeholder="Ex: 350,00">
+        </div>
+        <div class="form-row">
+          <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Salvar</button>
+          <button type="button" class="btn btn-outline" data-close="list-modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: item da lista ============ -->
+  <div class="modal" id="product-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2 id="modal-title">Adicionar item</h2>
+        <button class="close-modal" data-close="product-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="product-form">
+        <input type="hidden" id="product-id">
+        <div class="form-group">
+          <label for="product-name">Nome do produto</label>
+          <input type="text" id="product-name" placeholder="Ex: Arroz integral 1kg" required maxlength="60">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-quantity">Quantidade</label>
+            <input type="number" id="product-quantity" min="1" step="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label for="product-price">Preço unit. (R$)</label>
+            <input type="number" id="product-price" min="0" step="0.01" placeholder="Ex: 8,50" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="product-category">Categoria</label>
+          <select id="product-category">
+            <option value="food">Alimentos</option>
+            <option value="produce">Hortifruti</option>
+            <option value="clean">Limpeza</option>
+            <option value="hygiene">Higiene</option>
+            <option value="drinks">Bebidas</option>
+            <option value="other">Outros</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Salvar</button>
+          <button type="button" class="btn btn-outline" data-close="product-modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ Confirmação genérica ============ -->
+  <div class="modal" id="confirm-modal">
+    <div class="modal-sheet modal-sheet-sm">
+      <div class="confirm-icon" id="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3 id="confirm-title">Tem certeza?</h3>
+      <p id="confirm-text">Esta ação não pode ser desfeita.</p>
+      <div class="form-row">
+        <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+        <button class="btn btn-outline" id="confirm-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificação -->
+  <div id="notification" class="notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notification-text">Operação realizada com sucesso!</span>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
