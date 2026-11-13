@@ -199,6 +199,15 @@
     <!-- ---------- COMPARATIVO ---------- -->
     <section class="screen" id="screen-compare" data-tab="compare">
 
+      <div class="seg" id="compare-seg">
+        <button class="seg-btn active" data-cview="lists">Listas</button>
+        <button class="seg-btn" data-cview="spend">Gastos</button>
+        <button class="seg-btn" data-cview="prices">Preços</button>
+      </div>
+
+      <!-- ===== Visão 1: comparativo entre listas (original) ===== -->
+      <div id="cview-lists">
+
       <div class="period-tabs" id="period-tabs">
         <button class="ptab active" data-period="30">30 dias</button>
         <button class="ptab" data-period="90">90 dias</button>
@@ -249,6 +258,27 @@
           </table>
         </div>
       </div>
+
+      </div><!-- /cview-lists -->
+
+      <!-- ===== Visão 2: análise de gastos (semana / mês / ano) ===== -->
+      <div id="cview-spend" hidden>
+        <div class="period-tabs" id="gran-tabs">
+          <button class="ptab" data-gran="week">Semanal</button>
+          <button class="ptab active" data-gran="month">Mensal</button>
+          <button class="ptab" data-gran="year">Anual</button>
+        </div>
+        <div id="spend-body"></div>
+      </div>
+
+      <!-- ===== Visão 3: histórico de preços por produto ===== -->
+      <div id="cview-prices" hidden>
+        <div class="price-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="price-search-input" placeholder="Buscar produto, marca ou código...">
+        </div>
+        <div id="prices-body"></div>
+      </div>
     </section>
 
     <!-- ---------- MAIS ---------- -->
@@ -288,7 +318,7 @@
         <div class="about-logo"><i class="fa-solid fa-basket-shopping"></i></div>
         <strong>ShopSmart</strong>
         <p>Organize suas compras de mercado em listas, marque os itens à medida que coloca no carrinho e acompanhe a evolução dos seus gastos ao longo do tempo.</p>
-        <span class="about-version">Versão 2.0.0 · dados salvos apenas neste dispositivo</span>
+        <span class="about-version">Versão 2.1.0 · dados salvos apenas neste dispositivo</span>
       </div>
     </section>
 
@@ -347,26 +377,50 @@
         <h2 id="modal-title">Adicionar item</h2>
         <button class="close-modal" data-close="product-modal"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <form id="product-form">
+      <form id="product-form" autocomplete="off">
         <input type="hidden" id="product-id">
-        <div class="form-group">
+        <input type="hidden" id="product-unit" value="un">
+
+        <div class="form-group suggest-wrap">
           <label for="product-name">Nome do produto</label>
           <input type="text" id="product-name" placeholder="Ex: Arroz integral 1kg" required maxlength="60">
+          <div class="suggest-list" id="name-suggest" hidden></div>
         </div>
+
+        <div class="form-group">
+          <label for="product-brand">Marca <span class="opt">opcional</span></label>
+          <input type="text" id="product-brand" placeholder="Ex: Tio João" maxlength="40">
+        </div>
+
+        <div class="unit-toggle" id="unit-toggle">
+          <button type="button" class="unit-btn active" data-unit="un"><i class="fa-solid fa-cube"></i> Por unidade</button>
+          <button type="button" class="unit-btn" data-unit="kg"><i class="fa-solid fa-weight-scale"></i> Por peso (kg)</button>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
-            <label for="product-quantity">Quantidade</label>
-            <input type="number" id="product-quantity" min="1" step="1" value="1" required>
+            <label for="product-quantity" id="qty-label">Quantidade</label>
+            <input type="number" id="product-quantity" min="1" step="1" value="1" inputmode="numeric" required>
           </div>
           <div class="form-group">
-            <label for="product-price">Preço unit. (R$)</label>
-            <input type="number" id="product-price" min="0" step="0.01" placeholder="Ex: 8,50" required>
+            <label for="product-price" id="price-label">Preço unit. (R$)</label>
+            <input type="number" id="product-price" min="0" step="0.01" inputmode="decimal" placeholder="Ex: 8,50" required>
           </div>
         </div>
-        <div class="form-group">
+
+        <div class="scale-display" id="scale-display" aria-live="polite">
+          <div><span class="sc-label" id="sc-price-label">Preço/un</span><span class="sc-val" id="sc-price">R$ 0,00</span></div>
+          <div><span class="sc-label" id="sc-qty-label">Qtd</span><span class="sc-val" id="sc-qty">1</span></div>
+          <div class="sc-total"><span class="sc-label">Total</span><span class="sc-val" id="sc-total">R$ 0,00</span></div>
+        </div>
+
+        <div class="price-hint" id="price-hint" hidden></div>
+
+        <div class="form-group" style="margin-top:14px;">
           <label for="product-category">Categoria</label>
           <select id="product-category">
             <option value="food">Alimentos</option>
+            <option value="meat">Carnes e frios</option>
             <option value="produce">Hortifruti</option>
             <option value="clean">Limpeza</option>
             <option value="hygiene">Higiene</option>
@@ -374,6 +428,26 @@
             <option value="other">Outros</option>
           </select>
         </div>
+
+        <div class="track-box">
+          <label class="track-row">
+            <input type="checkbox" id="track-check" checked>
+            <span>
+              <strong>Acompanhar preço deste produto</strong>
+              <small>Entra no histórico e na comparação de preços entre compras. Desmarque se não quiser analisar este item.</small>
+            </span>
+          </label>
+          <div id="track-fields">
+            <div class="form-group" style="margin:12px 0 0;">
+              <label for="product-barcode">Código de barras <span class="opt">opcional, mais preciso</span></label>
+              <div class="barcode-row">
+                <input type="text" id="product-barcode" inputmode="numeric" maxlength="14" placeholder="Digite ou escaneie">
+                <button type="button" class="scan-btn" id="scan-btn"><i class="fa-solid fa-camera"></i> Escanear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-row">
           <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Salvar</button>
           <button type="button" class="btn btn-outline" data-close="product-modal">Cancelar</button>
@@ -393,6 +467,29 @@
         <button class="btn btn-outline" id="confirm-cancel">Cancelar</button>
       </div>
     </div>
+  </div>
+
+  <!-- ============ MODAL: histórico de preço do produto ============ -->
+  <div class="modal" id="price-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2 id="price-modal-title">Produto</h2>
+        <button class="close-modal" data-close="price-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="price-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ Leitor de código de barras (câmera) ============ -->
+  <div class="scanner" id="scanner" hidden>
+    <video id="scanner-video" playsinline muted></video>
+    <div class="scanner-top">
+      <button type="button" class="scanner-btn" id="scanner-close" aria-label="Fechar leitor"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" class="scanner-btn" id="scanner-torch" aria-label="Lanterna" hidden><i class="fa-solid fa-bolt"></i></button>
+    </div>
+    <div class="scanner-frame"><span></span></div>
+    <div class="scanner-msg" id="scanner-msg">Aponte para o código de barras</div>
   </div>
 
   <!-- Notificação -->

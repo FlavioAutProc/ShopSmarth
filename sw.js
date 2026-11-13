@@ -6,7 +6,7 @@
    no IndexedDB (não passam pelo service worker).
    ================================================================== */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `shopsmart-shell-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -27,10 +27,20 @@ const APP_SHELL = [
   "./icons/icon-maskable-512.png",
 ];
 
+// Leitor de código de barras (ZXing) — usado quando o navegador não tem BarcodeDetector.
+// É "opcional": se falhar o download, a instalação do app não é derrubada.
+const OPTIONAL_ASSETS = ["./vendor/zxing.min.js"];
+
 // ---------- Instalação: pré-carrega o app shell ----------
+// cache: "reload" ignora o cache HTTP do navegador/CDN, para não gravar arquivos velhos.
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then(async (cache) => {
+        await cache.addAll(APP_SHELL.map((url) => new Request(url, { cache: "reload" })));
+        await Promise.allSettled(OPTIONAL_ASSETS.map((url) => cache.add(new Request(url, { cache: "reload" }))));
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
